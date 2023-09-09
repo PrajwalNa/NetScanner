@@ -6,7 +6,7 @@ python3 netScan.py
 -t/--target (Target IP Range / IP address)[Required] 
 -p/--port (Target port to scan)[Optional] 
 -s/--scan-type (the type of port scan to perform. DEFAULT: TCP Connect Scan)[Optional]
--d/--default (TCP Connect Scan of the first 1000 ports of the Target IP)
+-d/--default (TCP Connect Scan of the first 1000 ports of the Target IP)[Optional]
 
 # Dependencies
 Scapy:
