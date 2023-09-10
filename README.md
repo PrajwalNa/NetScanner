@@ -10,4 +10,4 @@ python3 netScan.py
 
 # Dependencies
 Scapy:
-    pip3 install scapy
+    pip3 install scapy
