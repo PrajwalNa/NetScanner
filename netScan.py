@@ -14,9 +14,9 @@ ANSI escape codes:
     Green Background: \033[48;5;82m
     White Background: \033[48;5;255m
     Red: \033[38;5;196m
-    Cyan: \033[38;5;51m
+    Cyan: \033[38;5;87m
     Green: \033[38;5;82m
-    Yellow: \033[38;5;227m
+    Yellow: \033[38;5;228m
     Black: \033[38;5;0m
     Clear: \033[0m
 ---------------------------------
@@ -67,7 +67,7 @@ def getArgs():
     parser.add_argument("-s", "--scan-type", dest="scanType", help="Scan type.", required=False, choices=["tcpCONN","tcpSYN", "udp"])
     options = parser.parse_args()                       # Parsing the arguments
     if not options.target:                              # Checking if the target IP / IP range is specified, exiting if not
-        parser.error("\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;227m[*]Use --help for more info.\033[0m")
+        parser.error("\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;228m[*]Use --help for more info.\033[0m")
         sys.exit(1)
     if options.default and options.port:                # Checking if both the port and the default port scan are specified, exiting if so
         parser.error("\033[38;5;196m[-] Please specify either a port or the default port scan.\033[0m")
@@ -104,7 +104,7 @@ def scan(ip):
         pos = ip.rfind(".")                                                 # Finding the last occurence of a dot    
         ip = ip[:pos] + ".1/24"                                             # Slicing the IP from the postion of last '.' and adding the CIDR notation
     print("\033[38;5;82m[+] Scanning the network.\033[0m")
-    print("\033[38;5;227m[+] Press Ctrl+C to stop the scan.\033[0m")
+    print("\033[38;5;228m[+] Press Ctrl+C to stop the scan.\033[0m")
     arpRequest = scapy.ARP(pdst=ip)                                         # Creating the ARP segment
     broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")                        # Creating the ethernet frame
     packet = broadcast/arpRequest                                           # Combining the ethernet frame and the ARP segment
@@ -141,10 +141,10 @@ def displayScan(answeredList):
     """
     list(map(loading, range(101)))                                          # Loading animation
     print("\n")
-    print(f"\033[48;5;255;38;5;0m|{'IP':<20}|{'MAC Address':<20}|{'Vendor':<60}|\033[0m")
-    print(f"\033[38;5;227m|{'-'*20}|{'-'*20}|{'-'*60}|\033[0m")
+    print(f"\033[48;5;255;38;5;0m|{'IP':<20}|{'MAC Address':<20}|{'Vendor':<68}|\033[0m")
+    print(f"\033[38;5;228m|{'-'*20}|{'-'*20}|{'-'*68}|\033[0m")
     for element in answeredList:
-        print(f"\033[38;5;227m|{element[1].psrc:<20}|{element[1].hwsrc:<20}|{getVendor(element[1].hwsrc):<60}|\033[0m")
+        print(f"\033[38;5;228m|\033[38;5;87m{element[1].psrc:<20}\033[38;5;228m|\033[38;5;87m{element[1].hwsrc:<20}\033[38;5;228m|\033[38;5;87m{getVendor(element[1].hwsrc):<68}\033[38;5;228m|\033[0m")
 
 def scanPort(ip, port):
     print("\033[38;5;196m[-] Port scanning is not yet implemented.\033[0m")
@@ -168,13 +168,13 @@ def main():
                 answeredList = scan(options.target)
                 displayScan(answeredList)
                 # Prompting the user to update the results
-                update = input("\n\033[38;5;227m[+] Do you want to update the results? (y/n): \033[0m").lower()
+                update = input("\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
                 if update != "y":                       # Checking if the user wants to update the results
                     sys.exit(0)                         # Exiting if not
                 os.system("clear")
                 print("\033[38;5;82m[+] Updating the results.\033[0m")    
         except KeyboardInterrupt:
-            print("\n\033[38;5;227m[-] Keyboard Interrupt. Exiting...\033[0m")
+            print("\n\033[38;5;228m[-] Keyboard Interrupt. Exiting...\033[0m")
             sys.exit(0)
 
 if __name__ == "__main__":
