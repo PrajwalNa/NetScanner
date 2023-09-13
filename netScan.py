@@ -1,7 +1,9 @@
+#!/usr/bin/python3
 """
 ---------------------------------
 Dev: Prajwal Nautiyal
-Date: 09 September 2023
+Date: 12 September 2023
+Version: 0.8
 ---------------------------------
 This is a simple network scanner.
 It scans the network and returns the IP, MAC address and, with relative accuracy, the hardware vendor of the devices connected to the network.
@@ -34,14 +36,12 @@ import argparse
 import os
 import sys
 import time
+import threading
 
 import scapy.all as scapy
 
 # Clearing the screen
 os.system("clear")
-
-# Loading animation
-loading = lambda i: print(f"\r|\033[48;5;51;38;5;0m{'>' * (i * 25 // 100)}\033[0m{' ' * (25 - (i * 25 // 100))}|", end="") or time.sleep(0.01)
 
 def getArgs():
     """
@@ -65,6 +65,7 @@ def getArgs():
     parser.add_argument("-p", "--port", dest="port", help="Port to scan.", required=False)
     parser.add_argument("-d", "--default", dest="default", help="Scan the default ports.", required=False, action="store_true")
     parser.add_argument("-s", "--scan-type", dest="scanType", help="Scan type.", required=False, choices=["tcpCONN","tcpSYN", "udp"])
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s 0.8")
     options = parser.parse_args()                       # Parsing the arguments
     if not options.target:                              # Checking if the target IP / IP range is specified, exiting if not
         parser.error("\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;228m[*]Use --help for more info.\033[0m")
@@ -85,66 +86,111 @@ def getArgs():
             options.scanType = "tcpCONN"
     return options
 
-def scan(ip):
+
+class subnetScan(threading.Thread):
     """
-    Function to scan the network
+    Class to scan the network
 
     Args:
         ip (str): The IP range to scan
 
     Returns:
+        None
+
+    Methods:
+        run: Function to scan the network, and print the results
+        getVendor: Function to get the vendor of a device with the specified MAC address using macvendors API
+        displayScan: Function to display the scan results
+
+    Attributes:
         answeredList: The list of answered packets
+        ipRange: The IP range to scan
+        mac: The MAC address of the device
+        vendor: The vendor of the device
+        resultsDict: The dictionary containing the results
 
     Raises:
         None
     """
-    answeredList = []
-    # Checking if the IP range is specified in CIDR notation, if not, adding it
-    if ip.find("/") == -1:
-        pos = ip.rfind(".")                                                 # Finding the last occurence of a dot    
-        ip = ip[:pos] + ".1/24"                                             # Slicing the IP from the postion of last '.' and adding the CIDR notation
-    print("\033[38;5;82m[+] Scanning the network.\033[0m")
-    print("\033[38;5;228m[+] Press Ctrl+C to stop the scan.\033[0m")
-    arpRequest = scapy.ARP(pdst=ip)                                         # Creating the ARP segment
-    broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")                        # Creating the ethernet frame
-    packet = broadcast/arpRequest                                           # Combining the ethernet frame and the ARP segment
-    while answeredList == []:
-        answeredList = scapy.srp(packet, timeout=1, verbose=False)[0]       # Sending the packet until receiving the response
-    return answeredList
+    def __init__(self, ip):
+        threading.Thread.__init__(self)
+        # Checking if the IP range is specified in CIDR notation, if not, adding it
+        if ip.find("/") == -1:
+            pos = ip.rfind(".")                                                 # Finding the last occurence of a dot    
+            ip = ip[:pos] + ".1/24"                                             # Slicing the IP from the postion of last '.' and adding the CIDR notation
+        self.answeredList = []
+        self.ipRange = ip
+        self.mac = ""
+        self.vendor = ""
+        self.resultsDict = {}
+        
+    def run(self):
+        """
+        Function to scan the network, and print the results
 
-def getVendor(mac):
-    """
-    Function to get the vendor of a device with the specified MAC address using macvendors API
+        Args:
+            ip (str): The IP range to scan
 
-    Args:
-        mac (str): The MAC address of the device
+        Returns:
+            None
 
-    Returns:
-        vendor: The vendor of the device
-    """
-    mac = mac.upper()                                                       # Converting the MAC address to uppercase
-    mac = mac.replace(":", "-")                                             # Replacing the colons with hyphens
-    vendor = os.popen(f"curl -s https://api.macvendors.com/{mac}").read()   # Getting the vendor from the API
-    if str(vendor).find("errors") != -1:                                    # Checking if the vendor is not found
-        vendor = "Unknown"
-    return vendor
+        Raises:
+            None
+        """
+        print("\033[38;5;228m[+] Press Ctrl+C to stop the scan.\033[0m")
+        arpRequest = scapy.ARP(pdst=self.ipRange)                                       # Creating the ARP segment
+        broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")                                # Creating the ethernet frame
+        packet = broadcast/arpRequest                                                   # Combining the ethernet frame and the ARP segment
+        while self.answeredList == []:
+            self.answeredList = scapy.srp(packet, timeout=1, verbose=False)[0]          # Sending the packet until receiving the response
+        self.displayScan()                                                              # Displaying the scan results
+    
+    def getVendor(self, mac):
+        """
+        Function to get the vendor of a device with the specified MAC address using macvendors API
 
-def displayScan(answeredList):
-    """
-    Function to display the scan results
+        Args:
+            mac (str): The MAC address of the device
 
-    Args:
-        answeredList: The list of answered packets
+        Returns:
+            None
+        """
+        self.mac = mac.upper()                                                              # Converting the MAC address to uppercase
+        self.mac = self.mac.replace(":", "-")                                               # Replacing the colons with hyphens
+        self.vendor = os.popen(f"curl -s https://api.macvendors.com/{self.mac}").read()     # Getting the vendor from the API
+        if str(self.vendor).find("errors") != -1:                                           # Checking if the vendor is not found
+            self.vendor = "Unknown"
 
-    Returns:
-        None
-    """
-    list(map(loading, range(101)))                                          # Loading animation
-    print("\n")
-    print(f"\033[48;5;255;38;5;0m|{'IP':<20}|{'MAC Address':<20}|{'Vendor':<68}|\033[0m")
-    print(f"\033[38;5;228m|{'-'*20}|{'-'*20}|{'-'*68}|\033[0m")
-    for element in answeredList:
-        print(f"\033[38;5;228m|\033[38;5;87m{element[1].psrc:<20}\033[38;5;228m|\033[38;5;87m{element[1].hwsrc:<20}\033[38;5;228m|\033[38;5;87m{getVendor(element[1].hwsrc):<68}\033[38;5;228m|\033[0m")
+    def displayScan(self):
+        """
+        Function to display the scan results
+
+        Args:
+            answeredList: The list of answered packets
+
+        Returns:
+            None
+        """
+        for element in self.answeredList:
+            self.getVendor(element[1].hwsrc)
+            self.resultsDict[element[1].psrc] = [element[1].hwsrc, self.vendor]
+        print("\r" + " " * 100, end="", flush=True)
+        print("\r\033[38;5;82m[+] Network Scan complete.\033[0m")
+        print(f"\n\033[48;5;255;38;5;0m|{'IP':<20}|{'MAC Address':<20}|{'Vendor':<68}|\033[0m")
+        print(f"\033[38;5;228m|{'-'*20}|{'-'*20}|{'-'*68}|\033[0m")
+        for key in self.resultsDict:
+            print(f"\033[38;5;228m|\033[38;5;87m{key:<20}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][0]:<20}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][1]:<68}\033[38;5;228m|\033[0m")
+        print(f"\033[38;5;228m|{'-'*20}|{'-'*20}|{'-'*68}|\033[0m")
+        print(f"\033[38;5;82m[+] Total devices found: {len(self.resultsDict)}\033[0m")
+        print("\n")
+
+
+class portScan(threading.Thread):
+    def __init__(self, ip, port):
+        threading.Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+        self.resultsDict = {}
 
 def scanPort(ip, port):
     print("\033[38;5;196m[-] Port scanning is not yet implemented.\033[0m")
@@ -165,10 +211,16 @@ def main():
     else:                                               # If neither the port nor the default port scan is specified a network scan is performed
         try:
             while True:
-                answeredList = scan(options.target)
-                displayScan(answeredList)
+                scan = subnetScan(options.target)
+                print("\033[38;5;82m[+] Scanning the network.\033[0m")
+                scan.start()
+                while scan.is_alive():
+                    for i in ['.    ', '..   ', '...  ', '.... ', '.....', ' ....', '  ...', '   ..', '    .', '     ']:
+                        print(f"\r\033[38;5;82m[+] Scanning the network {i}", flush=True, end="")
+                        time.sleep(0.12)
                 # Prompting the user to update the results
-                update = input("\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
+                print("\r" + " " * 100, end="", flush=True)
+                update = input("\r\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
                 if update != "y":                       # Checking if the user wants to update the results
                     sys.exit(0)                         # Exiting if not
                 os.system("clear")
