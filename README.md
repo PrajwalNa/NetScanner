@@ -11,3 +11,6 @@ python3 netScan.py
 # Dependencies
 Scapy:
     pip3 install scapy
+
+# OS Compatibility
+Linux
