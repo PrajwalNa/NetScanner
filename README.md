@@ -3,6 +3,7 @@ A basic network scanner for scanning IPs active on a subnet or scanning ports on
 
 # Usage
 chmod u+x netScan.py
+
 ./netScan.py -h/--help
 
 # Dependencies
