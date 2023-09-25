@@ -2,7 +2,7 @@
 """
 ---------------------------------
 Dev: Prajwal Nautiyal
-Date: 12 September 2023
+Date: 24 September 2023
 Version: 0.9 (alpha)
 ---------------------------------
 This is a simple network scanner.
