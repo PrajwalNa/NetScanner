@@ -2,7 +2,8 @@
 A basic network scanner for scanning IPs active on a subnet or scanning ports on a target.
 
 # Usage
-python3 netScan.py -h/--help
+chmod u+x netScan.py
+./netScan.py -h/--help
 
 # Dependencies
 Scapy:
