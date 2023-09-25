@@ -2,7 +2,7 @@
 A basic network scanner for scanning IPs active on a subnet or scanning ports on a target.
 
 # Usage
-chmod u+x netScan.py
+chmod u+rwx netScan.py
 
 ./netScan.py -h/--help
 
