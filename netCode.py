@@ -305,13 +305,13 @@ class portScan(threading.Thread):
                     elif response.getlayer(scapy.TCP).flags == 0x14:
                         # if aFlag is set, show all results
                         if self.aFlag:
-                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(scapy.ICMP):
                     # if the response has the ICMP type 3 then the destination is unreachable
                     if int(response.getlayer(scapy.ICMP).type) == 3:
                         # using the ICMPDICT to get the meaning of the ICMP code
-                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(scapy.ICMP).code)} - {ICMPDICT.get(int(response.getlayer(scapy.ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(scapy.ICMP).code)} - {ICMPDICT.get(int(response.getlayer(scapy.ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
