@@ -71,7 +71,7 @@ def updateRes():
     Function to check if the user wants to update the results or exit the program
     """
     # Prompting the user to update the results
-    print("\r" + " " * 120, end="", flush=True)
+    print("\r" + " " * 100, end="", flush=True)
     update = input("\r\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
     if update != "y":                       # Checking if the user wants to update the results
         sys.exit(0)                         # Exiting if not
@@ -269,10 +269,11 @@ class portScan(threading.Thread):
         TCP Connect Scan / Full Open Scan / 3-Way Handshake Scan
         """
         for ip in self.ipL:
+            count = 0
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
-                print("\r" + " " * 120, end="", flush=True)
+                print("\r" + " " * 100, end="", flush=True)
                 print(f"\r\033[38;5;228m[*] Scanning {ip}")
             srcPort = random.randint(1025,65534)    # since first 1024 ports are reserved
             for port in range(self.pMin, self.pMax + 1):
@@ -287,6 +288,7 @@ class portScan(threading.Thread):
                     # if aFlag is set, show all results
                     if self.aFlag:
                         self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
+                        count += 1
                 # if the response is received and the packet has a TCP layer
                 elif response.haslayer(scapy.TCP):
                     # if the response has the SYN and ACK flags set then the port is open
@@ -295,6 +297,7 @@ class portScan(threading.Thread):
                     # 0    0    0    1    0    0    1    0 
                     if response.getlayer(scapy.TCP).flags == 0x12:
                         self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is open.\033[0m")
+                        count += 1
                         # sending a RST packet to close the connection
                         packet = scapy.IP(dst=ip)/scapy.TCP(sport=srcPort,dport=port,flags='R')
                         response = scapy.sr(packet, verbose=0, timeout=2)
@@ -306,16 +309,20 @@ class portScan(threading.Thread):
                         # if aFlag is set, show all results
                         if self.aFlag:
                             self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
+                            count += 1
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(scapy.ICMP):
                     # if the response has the ICMP type 3 then the destination is unreachable
                     if int(response.getlayer(scapy.ICMP).type) == 3:
                         # using the ICMPDICT to get the meaning of the ICMP code
                         self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(scapy.ICMP).code)} - {ICMPDICT.get(int(response.getlayer(scapy.ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                        count += 1
+            if count == 0 and not self.aFlag:
+                self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
-                print("\r" + " " * 120, end="", flush=True)
+                print("\r" + " " * 100, end="", flush=True)
                 print(f"\r\033[38;5;82m[+] {ip} Scanned\n\033[0m") 
 
     def tcpSYN(self) -> None:
