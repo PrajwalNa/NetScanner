@@ -2,8 +2,8 @@
 """
 ---------------------------------
 Dev: Prajwal Nautiyal
-Date: 24 September 2023
-Version: 0.9 (alpha)
+Date: 30 September 2023
+Version: 1.2
 ---------------------------------
 This is a simple network scanner.
 It scans the network and returns the IP, MAC address and, with relative accuracy, the hardware vendor of the devices connected to the network.
@@ -13,7 +13,10 @@ It also has basic port scanning functionality.
 ---------------------------------
 """
 
-from netCode import *  
+from .netCode import *
+from .port import portScan
+from .subnet import subnetScan
+
 
 def main():
     """
