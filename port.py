@@ -87,8 +87,7 @@ class portScan(threading.Thread):
                 if not response:                    # if no response is received
                     # if aFlag is set, show all results
                     if self.aFlag:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
                         count += 1
                 # if the response is received and the packet has a TCP layer
                 elif response.haslayer(TCP):
@@ -96,12 +95,15 @@ class portScan(threading.Thread):
                     # 0x12 is the hex value of 10010 in binary, which is the value of the flags
                     # CWR, ECE, URG, ACK, PSH, RST, SYN, FIN
                     # 0    0    0    1    0    0    1    0
-                    if response.getlayer(TCP).flags == 0x12:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;82m[+] {ip} : {port} is open.\033[0m")
+                    # or if the response has the SYN flag set then also the port is open
+                    # 0x02 is the hex value of 00010 in binary, which is the value of the flags
+                    # CWR, ECE, URG, ACK, PSH, RST, SYN, FIN
+                    # 0    0    0    0    0    0    1    0
+                    if response.getlayer(TCP).flags == 0x12 or response.getlayer(TCP).flags == 0x02:
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is open.\033")
                         count += 1
-                        # sending a RST packet to close the connection
-                        packet = IP(dst=ip)/TCP(sport=srcPort, dport=port, flags='R')
+                        # sending a ACK RST packet to complete the connection and close it
+                        packet = IP(dst=ip)/TCP(sport=srcPort, dport=port, flags='AR')
                         response = sr(packet, verbose=0, timeout=2)
                     # if the response has the RST flag set then the port is closed
                     # 0x14 is the hex value of 10100 in binary, which is the value of the flags
@@ -110,8 +112,7 @@ class portScan(threading.Thread):
                     elif response.getlayer(TCP).flags == 0x14:
                         # if aFlag is set, show all results
                         if self.aFlag:
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
                             count += 1
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(ICMP):
@@ -123,8 +124,7 @@ class portScan(threading.Thread):
                                 f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
                             count += 1
             if count == 0 and not self.aFlag:
-                self.resultsDict.setdefault(ip, []).append(
-                    f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
+                self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
@@ -155,8 +155,7 @@ class portScan(threading.Thread):
                 if not response:                    # if no response is received
                     # if aFlag is set, show all results
                     if self.aFlag:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
                         count += 1
                 # if the response is received and the packet has a TCP layer
                 elif response.haslayer(TCP):
@@ -164,11 +163,16 @@ class portScan(threading.Thread):
                     # 0x12 is the hex value of 10010 in binary, which is the value of the flags
                     # CWR, ECE, URG, ACK, PSH, RST, SYN, FIN
                     # 0    0    0    1    0    0    1    0
-                    if response.getlayer(TCP).flags == 0x12:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;82m[+] {ip} : {port} is open.\033")
+                    # or if the response has the SYN flag set then also the port is open
+                    # 0x02 is the hex value of 00010 in binary, which is the value of the flags
+                    # CWR, ECE, URG, ACK, PSH, RST, SYN, FIN
+                    # 0    0    0    0    0    0    1    0
+                    if response.getlayer(TCP).flags == 0x12 or response.getlayer(TCP).flags == 0x02:
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is open.\033")
                         count += 1
-                        # sending a RST packet to close the connection
+                        # sending a RST packet to close the connection instead of ACK RST
+                        # this is done to avoid the connection being established
+                        # and to avoid detection by firewalls
                         packet = IP(dst=ip)/TCP(sport=srcPort, dport=port, flags='R')
                         response = sr(packet, verbose=0, timeout=2)
                     # if the response has the RST flag set then the port is closed
@@ -178,8 +182,7 @@ class portScan(threading.Thread):
                     elif response.getlayer(TCP).flags == 0x14:
                         # if aFlag is set, show all results
                         if self.aFlag:
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
                             count += 1
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(ICMP):
@@ -187,12 +190,10 @@ class portScan(threading.Thread):
                     if int(response.getlayer(ICMP).type) == 3:
                         if self.aFlag:
                             # using the ICMPDICT to get the meaning of the ICMP code
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
                             count += 1
             if count == 0 and not self.aFlag:
-                self.resultsDict.setdefault(ip, []).append(
-                    f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
+                self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
@@ -223,15 +224,13 @@ class portScan(threading.Thread):
                 if not response:                    # if no response is received
                     # if aFlag is set, show all results
                     if self.aFlag:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
                         count += 1
                 # if the response is received and the packet has a TCP layer
                 elif response.haslayer(TCP):
                     # if the window size is 0 then the port is closed
                     if response.getlayer(TCP).window > 0:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;82m[+] {ip} : {port} is open.\033")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is open.\033")
                         count += 1
                         # sending a RST packet to close the connection
                         packet = IP(dst=ip)/TCP(sport=srcPort, dport=port, flags='R')
@@ -240,8 +239,7 @@ class portScan(threading.Thread):
                     else:
                         # if aFlag is set, show all results
                         if self.aFlag:
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} is closed.\033[0m")
                             count += 1
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(ICMP):
@@ -249,12 +247,10 @@ class portScan(threading.Thread):
                     if int(response.getlayer(ICMP).type) == 3:
                         if self.aFlag:
                             # using the ICMPDICT to get the meaning of the ICMP code
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
                             count += 1
             if count == 0 and not self.aFlag:
-                self.resultsDict.setdefault(ip, []).append(
-                    f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
+                self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
@@ -285,8 +281,7 @@ class portScan(threading.Thread):
                 if not response:                    # if no response is received
                     # if aFlag is set, show all results
                     if self.aFlag:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is filtered (silently dropped).\033[0m")
                         count += 1
                 # if the response is received and the packet has a TCP layer
                 elif response.haslayer(TCP):
@@ -295,8 +290,7 @@ class portScan(threading.Thread):
                     # CWR, ECE, URG, ACK, PSH, RST, SYN, FIN
                     # 0    0    0    1    0    1    0    0
                     if response.getlayer(TCP).flags == 0x14:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;82m[+] {ip} : {port} is unfiltered.\033")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is unfiltered.\033")
                         count += 1
                         # sending a RST packet to close the connection
                         packet = IP(dst=ip)/TCP(sport=srcPort, dport=port, flags='R')
@@ -307,12 +301,10 @@ class portScan(threading.Thread):
                     if int(response.getlayer(ICMP).type) == 3:
                         if self.aFlag:
                             # using the ICMPDICT to get the meaning of the ICMP code
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
                             count += 1
             if count == 0 and not self.aFlag:
-                self.resultsDict.setdefault(ip, []).append(
-                    f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
+                self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")
             # check for verbosity flag
             if self.vFlag:
                 # clear the line and print the message
@@ -343,13 +335,11 @@ class portScan(threading.Thread):
                 if not response:                    # if no response is received
                     # if aFlag is set, show all results
                     if self.aFlag:
-                        self.resultsDict.setdefault(ip, []).append(
-                            f"\033[38;5;87m[=] {ip} : {port} is either open or filtered.\033[0m")
+                        self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : {port} is either open or filtered.\033[0m")
                         count += 1
                 # if the response is received and the packet has a UDP layer
                 elif response.haslayer(UDP):
-                    self.resultsDict.setdefault(ip, []).append(
-                        f"\033[38;5;82m[+] {ip} : {port} is open.\033")
+                    self.resultsDict.setdefault(ip, []).append(f"\033[38;5;82m[+] {ip} : {port} is open.\033")
                     count += 1
                 # if the response is received and the packet has an ICMP layer
                 elif response.haslayer(ICMP):
@@ -357,8 +347,7 @@ class portScan(threading.Thread):
                     if int(response.getlayer(ICMP).type) == 3:
                         if self.aFlag:
                             # using the ICMPDICT to get the meaning of the ICMP code
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
 
     def display(self):
         for k, v in self.resultsDict.items():

@@ -113,8 +113,8 @@ def getArgs():
     parser.add_argument("-s", "--scan-type",
                         dest="scanType",
                         help="the type of protocol to use for port scan\
-                            \n1. tcpCONN: TCP Connect Scan - default TCP threeway handshake scan\
-                            \n2. tcpSYN: TCP SYN Scan - stealth scan\
+                            \n1. tcpCONN: TCP Connect Scan - TCP threeway handshake scan\
+                            \n2. tcpSYN: TCP SYN Scan - stealth scan, doesn't complete the connection [default scan]\
                             \n3. tcpWIN: TCP Window Scan - sends an ACK request and determines the port state by the window size of response\
                             \n4. tcpACK: TCP ACK Scan - used to determine whether a port is filtered or not\
                             \n5. udp: UDP Scan - sends a UDP packet to determine whether a port is open or not (not reliable)",
@@ -177,5 +177,5 @@ def getArgs():
             parser.error(
                 "\033[38;5;196m[-] Please specify a valid port number.\033[0m")
         if options.scanType == None:                        # Setting the scan type to tcpCONN if not specified
-            options.scanType = "tcpCONN"
+            options.scanType = "tcpSYN"
     return options
