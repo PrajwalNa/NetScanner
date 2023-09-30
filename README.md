@@ -7,6 +7,7 @@ Linux:
 ```
 chmod u+rwx netScan.py
 ```
+^^only once^^
 ```
 ./netScan.py -h/--help
 ```
@@ -21,7 +22,7 @@ Scapy:
     pip3/pip install scapy
 ```
 Windows:
-    winpcap(https://www.winpcap.org/install/default.htm) [deprecated] / npcap(https://nmap.org/npcap/) [recommended]
+    [winpcap](https://www.winpcap.org/install/default.htm) [deprecated] / [npcap](https://nmap.org/npcap/) [recommended]
 
 # OS Compatibility
 Linux, Windows
