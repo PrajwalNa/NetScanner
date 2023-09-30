@@ -13,9 +13,9 @@ It also has basic port scanning functionality.
 ---------------------------------
 """
 
-from .netCode import *
-from .port import portScan
-from .subnet import subnetScan
+from netCode import *
+from port import portScan
+from subnet import subnetScan
 
 
 def main():
@@ -25,14 +25,20 @@ def main():
     """
     if not isConnected():
         print("\033[38;5;196m[-] Error: No network connection found!!\033[0m")
-        sys.exit(3)
+        sys.exit(1)
     options = getArgs()                             # Getting the arguments
-    os.system("clear")
+    if os.name == "nt":                             # Checking if the OS is Windows
+        os.system("cls")                            # Clearing the screen
+    else:
+        os.system("clear")
     try:
         routing(options)
     except KeyboardInterrupt:
         print("\n\033[38;5;228m[-] Keyboard Interrupt. Exiting...\033[0m")
         sys.exit(0)
+    except Exception as e:
+        print(f"\033[38;5;196m[-] Error: {e}\033[0m")
+        sys.exit(1)
 
 def routing(op):
     """

@@ -76,7 +76,10 @@ def updateRes():
         "\r\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
     if update != "y":                       # Checking if the user wants to update the results
         sys.exit(0)                         # Exiting if not
-    os.system("clear")
+    if os.name == "nt":                     # Checking if the OS is Windows
+        os.system("cls")                    # Clearing the screen
+    else:
+        os.system("clear")
     print("\033[38;5;82m[+] Updating the results.\033[0m")
 
 

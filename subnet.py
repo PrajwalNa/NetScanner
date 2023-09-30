@@ -1,4 +1,4 @@
-from .netCode import *
+from netCode import *
 
 
 class subnetScan(threading.Thread):
