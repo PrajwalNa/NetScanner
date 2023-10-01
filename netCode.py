@@ -90,8 +90,8 @@ def getArgs():
     Returns:
         options: The arguments
             options.target: The target IP / IP range [Required]
-            options.port: The port(s) to scan [Optional] !Not yet implemented!
-            options.scanType: The type of scan [Optional] !Not yet implemented!
+            options.port: The port(s) to scan [Optional]
+            options.scanType: The type of scan [Optional]
     """
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter)   # Creating the parser object
     # Adding the arguments
