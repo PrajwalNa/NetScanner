@@ -145,7 +145,7 @@ def getArgs():
     if not options.target:
         parser.error(
             "\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;228m[*]Use --help for more info.\033[0m")
-    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", options.target) and re.match(r"^\d{1,3}\.\d{1,3}\.\d?\/?\d{1,3}\.\d\/\d{1,3}$", options.target):
+    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", options.target) and re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d\/\d{1,3}$", options.target):
         parser.error(
             "\033[38;5;196m[-] Please specify a valid format target IP/IP range\033[0m")
     if options.port:  # if the port argument is provided
