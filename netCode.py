@@ -48,8 +48,7 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 def loadAni(thrd: threading.Thread):
     while thrd.is_alive():
         for i in ["▹▹▹▹▹", "\033[38;5;87m▸\033[0m▹▹▹▹", "▹\033[38;5;87m▸\033[0m▹▹▹", "▹▹\033[38;5;87m▸\033[0m▹▹", "▹▹▹\033[38;5;87m▸\033[0m▹", "▹▹▹▹\033[38;5;87m▸\033[0m", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹"]:
-            print(
-                f"\r\033[38;5;87m[+] Scanning the network \033[0m{i}", flush=True, end="")
+            print(f"\r\033[38;5;87m[+] Scanning the network \033[0m{i}", flush=True, end="")
             time.sleep(0.12)
 
 
@@ -72,8 +71,7 @@ def updateRes():
     """
     # Prompting the user to update the results
     print("\r" + " " * 100, end="", flush=True)
-    update = input(
-        "\r\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
+    update = input("\r\n\033[38;5;228m[+] Do you want to update the results? (y/n): \033[0m").lower()
     if update != "y":                       # Checking if the user wants to update the results
         sys.exit(0)                         # Exiting if not
     if os.name == "nt":                     # Checking if the OS is Windows
@@ -143,11 +141,9 @@ def getArgs():
     options = parser.parse_args()                       # Parsing the arguments
     # Checking if the target IP / IP range is specified, exiting if not
     if not options.target:
-        parser.error(
-            "\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;228m[*]Use --help for more info.\033[0m")
+        parser.error("\033[38;5;196m[-] Please specify a target IP/IP range\n\033[38;5;228m[*]Use --help for more info.\033[0m")
     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", options.target) and re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d\/\d{1,3}$", options.target):
-        parser.error(
-            "\033[38;5;196m[-] Please specify a valid format target IP/IP range\033[0m")
+        parser.error("\033[38;5;196m[-] Please specify a valid format target IP/IP range\033[0m")
     if options.port:  # if the port argument is provided
         # check if its not a range
         if options.port.find("-") == -1:
@@ -162,8 +158,7 @@ def getArgs():
                     options.port[i] = int(port)
                     i += 1
                 except ValueError:
-                    parser.error(
-                        "\033[38;5;196m[-] Please specify a valid port number.\033[0m")
+                    parser.error("\033[38;5;196m[-] Please specify a valid port number.\033[0m")
         # if the range is given instead
         else:
             # splitting the string into two
@@ -173,12 +168,10 @@ def getArgs():
                 options.port[0] = int(options.port[0])
                 options.port[1] = int(options.port[1])
             except ValueError:
-                parser.error(
-                    "\033[38;5;196m[-] Please specify a valid port number.\033[0m")
+                parser.error("\033[38;5;196m[-] Please specify a valid port number.\033[0m")
         # Checking if the port number is valid, exiting if not
         if options.port[0] < 1 or options.port[1] > 65535:
-            parser.error(
-                "\033[38;5;196m[-] Please specify a valid port number.\033[0m")
+            parser.error("\033[38;5;196m[-] Please specify a valid port number.\033[0m")
         if options.scanType == None:                        # Setting the scan type to tcpCONN if not specified
             options.scanType = "tcpSYN"
     return options

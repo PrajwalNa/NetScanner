@@ -120,8 +120,7 @@ class portScan(threading.Thread):
                     if int(response.getlayer(ICMP).type) == 3:
                         if self.aFlag:
                             # using the ICMPDICT to get the meaning of the ICMP code
-                            self.resultsDict.setdefault(ip, []).append(
-                                f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
+                            self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
                             count += 1
             if count == 0 and not self.aFlag:
                 self.resultsDict.setdefault(ip, []).append(f"\033[38;5;87m[=] {ip} : No open ports found.\033[0m")

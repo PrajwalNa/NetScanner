@@ -64,8 +64,7 @@ class subnetScan(threading.Thread):
         """
         self.mac = mac.upper()                                                              # Converting the MAC address to uppercase
         # Getting the vendor from the API
-        self.vendor = os.popen(
-            f"curl -s https://api.macvendors.com/{self.mac}").read()
+        self.vendor = os.popen(f"curl -s https://api.macvendors.com/{self.mac}").read()
         # Checking if the vendor is not found
         if str(self.vendor).find("errors") != -1:
             self.vendor = "Unknown"
@@ -83,15 +82,12 @@ class subnetScan(threading.Thread):
             time.sleep(0.5)
         print("\r" + " " * 100, end="", flush=True)
         print("\r\033[38;5;82m[+] Network Scan complete.\033[0m")
-        print(
-            f"\n\033[48;5;255;38;5;0m|{'IP':<16}|{'MAC Address':<18}|{'Vendor':<65}|\033[0m")
+        print(f"\n\033[48;5;255;38;5;0m|{'IP':<16}|{'MAC Address':<18}|{'Vendor':<65}|\033[0m")
         print(f"\033[38;5;228m|{'-'*16}|{'-'*18}|{'-'*65}|\033[0m")
         for key in self.resultsDict:
-            print(
-                f"\033[38;5;228m|\033[38;5;87m{key:<16}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][0]:<18}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][1]:<65}\033[38;5;228m|\033[0m")
+            print(f"\033[38;5;228m|\033[38;5;87m{key:<16}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][0]:<18}\033[38;5;228m|\033[38;5;87m{self.resultsDict[key][1]:<65}\033[38;5;228m|\033[0m")
         print(f"\033[38;5;228m|{'-'*16}|{'-'*18}|{'-'*65}|\033[0m")
-        print(
-            f"\033[38;5;82m[+] Total devices found: {len(self.resultsDict)}\033[0m")
+        print(f"\033[38;5;82m[+] Total devices found: {len(self.resultsDict)}\033[0m")
         print("\n")
 
     def getIPs(self):
