@@ -1,5 +1,6 @@
 from netCode import *
 import random       # for generating random source ports
+sem = threading.Semaphore()
 
 class portScan(threading.Thread):
     """
@@ -21,7 +22,7 @@ class portScan(threading.Thread):
         udp: UDP Scan / UDP Ping Scan
     """
 
-    def __init__(self, ip: str, port, scanType: str, vFlag: bool = False, aFlag: bool = False):
+    def __init__(self, ip: list, port, scanType: str, vFlag: bool = False, aFlag: bool = False):
         threading.Thread.__init__(self)
         # if port is not a list then convert it to a list and store it in portL
         if not type(port) == list:
@@ -33,7 +34,7 @@ class portScan(threading.Thread):
             else:
                 # if the port is a list then store it in portL
                 self.portL = port
-        self.ipL = [ip]
+        self.ipL = ip
         self.scanType = scanType
         self.resultsDict = {}
         self.vFlag = vFlag
@@ -49,7 +50,7 @@ class portScan(threading.Thread):
         Uses match case statement to run the scan based on the scan type
         """
         print("\r" + " " * 100, end="", flush=True)
-        print("\r\033[38;5;228m[+] Press Ctrl+C to stop the scan.\033[0m")
+        sem.acquire()
         match self.scanType:
             case "tcpCONN":
                 self.tcpCONN()
@@ -61,7 +62,7 @@ class portScan(threading.Thread):
                 self.tcpACK()
             case "udp":
                 self.udp()
-        self.display()
+        sem.release()
 
     def tcpCONN(self) -> None:
         """
@@ -348,8 +349,11 @@ class portScan(threading.Thread):
                             # using the ICMPDICT to get the meaning of the ICMP code
                             self.resultsDict.setdefault(ip, []).append(f"\033[38;5;196m[-] {ip} : {port} ICMP code: {int(response.getlayer(ICMP).code)} - {ICMPDICT.get(int(response.getlayer(ICMP).code), 'Please check the code with: https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol#Control_messages')}.\033[0m")
 
-    def display(self):
-        for k, v in self.resultsDict.items():
-            print(f"\n{k}")
-            for i in v:
-                print(f"{i}")
+    def getResults(self) -> dict:
+        """
+        Function to get the results of the scan
+
+        Returns:
+            resultsDict (dict): The dictionary containing the results
+        """
+        return self.resultsDict

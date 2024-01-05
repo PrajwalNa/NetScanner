@@ -42,14 +42,20 @@ ICMPDICT = {
 # when you try to scan ports of local network devices
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
+closeProg = threading.Event()  # Event to stop the program
 
 # loading animation funtion
 # takes the thread object as argument and runs the animation while the thread is working
-def loadAni(thrd: threading.Thread):
-    while thrd.is_alive():
+def loadAni(thrd):
+    condition = True
+    while (condition):
         for i in ["▹▹▹▹▹", "\033[38;5;87m▸\033[0m▹▹▹▹", "▹\033[38;5;87m▸\033[0m▹▹▹", "▹▹\033[38;5;87m▸\033[0m▹▹", "▹▹▹\033[38;5;87m▸\033[0m▹", "▹▹▹▹\033[38;5;87m▸\033[0m", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹", "▹▹▹▹▹"]:
             print(f"\r\033[38;5;87m[+] Scanning the network \033[0m{i}", flush=True, end="")
             time.sleep(0.12)
+        if not type(thrd) == list:
+            condition = thrd.is_alive()
+        else:
+            condition = any(thread.is_alive() for thread in thrd)
 
 
 def isConnected() -> bool:
@@ -80,6 +86,22 @@ def updateRes():
         os.system("clear")
     print("\033[38;5;82m[+] Updating the results.\033[0m")
 
+def displayNetScan(resultsDict: list) -> None:
+    print("\r" + " " * 100, end="", flush=True)
+    print("\r\033[38;5;82m[+] Network Scan complete.\033[0m")
+    print(f"\n\033[48;5;255;38;5;0m|{'IP':<16}|{'MAC Address':<18}|{'Vendor':<65}|\033[0m")
+    print(f"\033[38;5;228m|{'-'*16}|{'-'*18}|{'-'*65}|\033[0m")
+    for key in resultsDict:
+        print(f"\033[38;5;228m|\033[38;5;87m{key:<16}\033[38;5;228m|\033[38;5;87m{resultsDict[key][0]:<18}\033[38;5;228m|\033[38;5;87m{resultsDict[key][1]:<65}\033[38;5;228m|\033[0m")
+    print(f"\033[38;5;228m|{'-'*16}|{'-'*18}|{'-'*65}|\033[0m")
+    print(f"\033[38;5;82m[+] Total devices found: {len(resultsDict)}\033[0m")
+    print("\n")
+
+def displayPortScan(resultsDict: list) -> None:
+    for k, v in resultsDict.items():
+        print(f"\n{k}")
+        for i in v:
+            print(f"{i}")
 
 def getArgs():
     """
