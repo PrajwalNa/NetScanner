@@ -43,7 +43,7 @@ Scapy:
 ```
     pip3/pip install scapy
 ```
-Windows/ and if you're Linux distro doesn't already have npcap get that:
+Windows/ and if your Linux distro doesn't already have npcap get that:
 
     [winpcap](https://www.winpcap.org/install/default.htm) [deprecated] / [npcap](https://nmap.org/npcap/) [recommended]
 
