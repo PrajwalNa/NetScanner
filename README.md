@@ -43,8 +43,9 @@ Scapy:
 ```
     pip3/pip install scapy
 ```
-Windows:
-   [winpcap](https://www.winpcap.org/install/default.htm) [deprecated] / [npcap](https://nmap.org/npcap/) [recommended]
+Pcap API for Windows:
+<br/>
+[winpcap](https://www.winpcap.org/install/default.htm) [deprecated] / [npcap](https://nmap.org/npcap/) [recommended]
 
 Linux should have the pcap api pre installed but if it doesn't get that.
 
